@@ -1,0 +1,235 @@
+#Rubrik Syslog Input
+input {
+  tcp {
+     host => "<localIP>"
+     port => 1514
+  }
+}
+filter {
+
+############### Collect Rubrik Syslog Message
+   grok {
+    match => {
+      "message" => '%{SYSLOG5424LINE}'
+     }
+   }
+   syslog_pri { }
+
+############### Align Timestamps
+   date {
+     match => [ "syslog5424_ts", "ISO8601" ]
+     locale => en
+   }
+
+############### Parse syslog5424_sd for base events and PID
+    if !([syslog5424_sd]) {
+      syslog_pri {
+        add_tag => ["no_syslog5424_sd"]}
+    } else {
+    grok {
+    match => {
+      "syslog5424_sd" => [ "\[%{NOTSPACE:mdc} ndc=\"(?<eventtype>[A-Z_]*)%{UUID:uuid}-(?<vmid>vm-[0-9]*)_%{UUID:instanceuuid}" , "\[%{NOTSPACE:mdc} ndc=\"(?<eventtype>[A-Z_]*)%{UUID:uuid}", "(?<mdc>mdc\@%{NUMBER}) ndc=\"(?<eventtype>[A-Z_]*)" ]  
+     }
+    } }
+    if !("no_syslog5424_sd" in [tags]) {
+    grok {
+    match => {
+      "message" => [ "pid=\"(?<rubriknodeid>[0-9]*)" ]
+       }
+    }  } 
+
+################ Parse common syslog5424_msg data
+   grok {
+    match => {
+      "syslog5424_msg" => [ "\(eventId=%{DATA:eventId} eventSeriesId=%{DATA:eventSeriesId} objectId=%{DATA:objectId} status=%{DATA:status}\) %{GREEDYDATA:description}" ]
+      }
+   }
+
+############### Extract SQL DB specific data from event description
+   if "MSSQL_DB_BACKUP" in [syslog5424_sd] {
+    grok {
+     match => {
+         "description" => [ "ase \'%{DATA:dbname}\' from \'%{DATA:bkptarget}\'" , "backup of '%{DATA:dbname}'" ] 
+         } 
+      }
+    } 
+
+############### Catch backup target name from non SQL backups
+    else if "from VM" in [description] or "Machine '" in [description] or "backup of '" in [description] or "on VM '" in [description] {
+    grok {
+     match => {
+         "description" => [ " backup of '%{DATA:bkptarget}'" , "Machine '%{DATA:bkptarget}'" , "from VM '%{DATA:bkptarget}'" , "on VM \'%{DATA:bkptarget}\'" ]  }
+     }
+   }
+
+############### VMWARE Snapshot information
+   if "snapshot on" in [description] {
+     grok {
+      match => {
+         "description" => [ "ot on \'%{DATA:bkptarget}\'" ]
+         }
+      }
+   }
+   if "seconds" in [description] {
+    grok {
+     match => {
+         "description" => [ "snapshot %{DATA:snapshotname} in %{POSINT:snapduration} seconds" ]   }
+        }
+    }
+   if [snapduration] {
+    mutate {
+     convert => { "snapduration" => "integer" }
+         }
+   } 
+   if "Removing" in [description] and "snapshot" in [description] {
+    grok {
+     match => {
+         "description" => [ "snapshot %{DATA:snapshotname} on VM '%{DATA:bkptarget}'" ] }
+     }
+   }
+
+############### VMWARE Refresh information
+   if "REFRESH" in [eventtype] {
+    grok {
+     match => {
+         "description" => [ "'%{IP:vCenterIP}'" , "'%{HOSTNAME:vCentername}'" ]  } 
+      }
+    }
+
+############### Warning Parsing
+   if "filesystem-consistent" in [description] {
+    grok {
+      match => {
+         "description" => [ "shots for '%{DATA:bkptarget}' .*? version '%{NUMBER:vmtools_vs}'" ] }
+     }
+   } 
+
+############## Fileset target and host
+   if "backup of Fileset" in [description] {
+     grok {
+       match => {
+          "description" => [ "of Fileset \'%{DATA:filetemplate}\' from \'%{IP:bkptarget}\'" , "of Fileset \'%{DATA:filetemplate}\' from \'%{DATA:bkptarget}\'" ] }
+       }
+    } 
+
+############## Replication Changes
+   if !("no_syslog5424_sd" in [tags]) and "eplication" in [description] {
+      grok {
+	    match => {
+		   "description" => [ "eplication target \'%{IP:drclusterip}\'" , "eplication target \'%{DATA:drclusterhost}\'" ] }
+		add_tag => [ "replication" ]
+		}
+    }
+
+############## Collect Ingest Metric and Calculate in MB
+   if "Ingested" in [description] {
+    grok {
+      match => {
+         "description" => [ "%{NUMBER:ingestmb:int} MB" , "%{NUMBER:ingestgb:int} GB" , "%{NUMBER:ingestbyte:int} bytes", "%{NUMBER:ingestkb:int} KB"] }
+       }
+    }
+   if [ingestgb] {
+      ruby  {
+          code => "event['ingestdata'] = event['ingestgb'].to_f*1024*1024*1024"
+          remove_field => ["ingestgb"] }
+     } else if [ingestmb] {
+      ruby {
+          code => "event['ingestdata'] = event['ingestmb'].to_f*1024*1024" 
+          remove_field => ["ingestmb"]} 
+     } else if [ingestkb] {
+      ruby {
+          code => "event['ingestdata'] = event['ingestkb'].to_f*1024"
+          remove_field => ["ingestkb"]}
+     }
+     else if [ingestbyte] {
+      mutate {
+          add_field => { "ingestdata" => "${ingestbyte}" }
+          remove_field => ["ingestbyte"] }
+     }
+   if [ingestdata] {
+     mutate {
+       convert => { "ingestdata" => "integer" }
+     }
+   }
+
+
+############## Event duration measurement
+
+# Tag Beginning event Based on Queued activity
+   if "Queued" in [description] {
+     grok {
+        match => { "description" => "Queued" }
+        add_tag => ["taskQueued"] }
+
+# Tag end of event based on Completed activity
+   } else if "Completed" in [description] and "Success" in [status] { 
+     grok {
+        match => { "description" => "Completed" }
+        add_tag => ["taskCompleted"] }
+   }
+
+# Tag Beginning of replication change event series
+   else if "replication" in [tags] and "Success" not in [status] {
+     mutate {
+	     add_tag => ["replStarted"]
+		 }
+	 } else if "replication" in [tags] and "Success" in [status] {
+	 mutate {
+		 add_tag => ["replCompleted"]
+		 }
+	}
+		 
+# Tag beginning of Creating Event activity
+   if "Creating  backup" in [description] {
+     grok {
+        match => { "description" => "Creating  backup" }
+        add_tag => ["taskStarted"] }
+    }
+
+# Measure replication change time
+    elapsed {
+       start_tag => "replStarted"
+	   end_tag => "replCompleted"
+	   unique_id_field => "eventSeriesId"
+	 }
+	 if [elapsed_time] {
+	   mutate {
+	      add_field => {
+		     "repl_change_dur" => "%{elapsed_time}" }
+		  remove_field => ["elapsed_time"]
+		  convert => {"repl_change_dur" => "integer"}
+		  }
+	}
+	
+# Measure elapsed time between Task Start and completed 
+   elapsed {
+     start_tag => "taskStarted"
+     end_tag => "taskCompleted"
+     unique_id_field => "eventSeriesId"
+   }
+  if [elapsed_time] {
+     mutate {
+       add_field => {
+         "taskduration" => "%{elapsed_time}" }
+       convert => {"taskduration" => "integer"}
+       remove_field => [ "elapsed_time" ] 
+     }
+   }
+ 
+# Measure Queued time of Task 
+   elapsed {
+     start_tag => "taskQueued"
+     end_tag => "taskCompleted"
+     unique_id_field => "eventSeriesId"
+   }
+   if [elapsed_time] {
+     ruby {
+        code => "event['queuedduration'] = event['taskduration'] - event['elapsed_time'].to_i" 
+   } }
+
+}
+output {
+  elasticsearch {
+    hosts => ["<elasticsearch>"]
+  }
+}
