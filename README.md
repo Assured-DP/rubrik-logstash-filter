@@ -1,6 +1,4 @@
-<snippet>
-  <content><![CDATA[
-# ${1:Project Name}
+# rubrik-logstash-filter
 Rubrik-logstash-filter provides a quick and easy filter to convert the output of a Rubrik Syslog into the base components to be searched upon by ElasticSearch. 
 ## Installation
 Installation of the rubrik-logstash-filter is completed by placing the rubrikfilter.conf file into your logstash config folder. Typically this folder is located at: 
