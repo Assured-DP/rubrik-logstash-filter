@@ -15,8 +15,8 @@ Place the rubrikfilter.conf file with changes into the logstash config folder
 
 ###Compatibility
 Tested Logstash Versions:
-Logstash 2.4 --- (rubrikfilter_pre5.conf)
-Logstash 5.0.2-1 --- (rubrikfilter_5.conf)
+>Logstash 2.4 --- (rubrikfilter_pre5.conf)
+>Logstash 5.0.2-1 --- (rubrikfilter_5.conf)
 
 Please use the correct Verion identified file for the logstash version as there are differences in the required logstash plugins and logstash syntax.
 
@@ -37,6 +37,3 @@ Rubrik filter leverages the standard included filters with Logstash. Additionall
 aeva_assured
 
 ## License
-]]></content>
-  <tabTrigger>readme</tabTrigger>
-</snippet>
