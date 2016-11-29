@@ -17,10 +17,16 @@ Place the rubrikfilter.conf file with changes into the logstash config folder
 Tested Logstash Versions:
 
 Logstash 2.4 --- *rubrikfilter_pre5.conf*
+```
+uses pre version 5.0 ruby formatting of event['<eventname>']
+```
 
 Logstash 5.0.2-1 --- *rubrikfilter_5.conf*
+```
+updated for event.get / event.set v5+ requirements
+```
 
-Please use the correct Verion identified file for the logstash version as there are differences in the required logstash plugins and logstash syntax.
+Please use the correct version identified file for the logstash version as there are differences in the required logstash plugins and logstash syntax.
 
 ###Required Filters
 Rubrik filter leverages the standard included filters with Logstash. Additionally, the Assured DP Rubrik Syslog filter requires the community maintained [logstash-filter-elapsed](https://github.com/logstash-plugins/logstash-filter-elapsed).
