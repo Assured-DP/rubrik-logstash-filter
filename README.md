@@ -34,8 +34,6 @@ Rubrik filter leverages the standard included filters with Logstash. Additionall
 ###Known Issues
 Issue 001: Fileset Completed backups do not calculate elapsed time due to syslog variations
 
-~~Issue 002: Ingests of TB capacity or greater generates a grokparsefailure tag.~~ Issue Corrected.
-
 ## Contributing
 1. Fork it!
 2. Create your feature branch: `git checkout -b my-new-feature`
