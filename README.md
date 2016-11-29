@@ -25,6 +25,11 @@ Please use the correct Verion identified file for the logstash version as there 
 ###Required Filters
 Rubrik filter leverages the standard included filters with Logstash. Additionally, the Assured DP Rubrik Syslog filter requires the community maintained [logstash-filter-elapsed](https://github.com/logstash-plugins/logstash-filter-elapsed).
 
+###Known Issues
+Issue 001: Fileset Completed backups do not calculate elapsed time due to syslog variations
+
+Issue 002: Ingests of TB capacity or greater generates a grokparsefailure tag.
+
 ## Contributing
 1. Fork it!
 2. Create your feature branch: `git checkout -b my-new-feature`
