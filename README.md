@@ -26,20 +26,13 @@ Logstash 5.0.2-1 --- *rubrikfilter_5.conf*
 updated for event.get / event.set v5+ requirements
 ```
 
-Please use the correct version identified file for the logstash version as there are differences in the required logstash plugins and logstash syntax.
+Please use the correct version identified file for the logstash version as there are differences in the required logstash plugins and logstash syntax. This filter is not designed to be used alongside a larger filter set in the same instance of logstash. The intent is that it is deployed in its own instance. A future design plan is to create a version that will run in conjunction with other designed filters
 
 ###Required Filters
 Rubrik filter leverages the standard included filters with Logstash. Additionally, the Assured DP Rubrik Syslog filter requires the community maintained [logstash-filter-elapsed](https://github.com/logstash-plugins/logstash-filter-elapsed).
 
 ###Known Issues
 Issue 001: Fileset Completed backups do not calculate elapsed time due to syslog variations
-
-## Contributing
-1. Fork it!
-2. Create your feature branch: `git checkout -b my-new-feature`
-3. Commit your changes: `git commit -am 'Add some feature'`
-4. Push to the branch: `git push origin my-new-feature`
-5. Submit a pull request :D
 
 ## History
 2016-NOV-29: Initial creation : aeva_assured
