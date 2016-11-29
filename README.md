@@ -28,7 +28,7 @@ Rubrik filter leverages the standard included filters with Logstash. Additionall
 ###Known Issues
 Issue 001: Fileset Completed backups do not calculate elapsed time due to syslog variations
 
-Issue 002: Ingests of TB capacity or greater generates a grokparsefailure tag.
+~~Issue 002: Ingests of TB capacity or greater generates a grokparsefailure tag.~~
 
 ## Contributing
 1. Fork it!
