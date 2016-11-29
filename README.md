@@ -47,6 +47,6 @@ Issue 001: Fileset Completed backups do not calculate elapsed time due to syslog
 2016-NOV-29: Initial creation : aeva_assured
 
 ## Credits
-aeva_assured
+[aeva_assured](https://github.com/aeva-assured)
 
 ## License
