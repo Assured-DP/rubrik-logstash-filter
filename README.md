@@ -34,6 +34,13 @@ Rubrik filter leverages the standard included filters with Logstash. Additionall
 ###Known Issues
 Issue 001: Fileset Completed backups do not calculate elapsed time due to syslog variations
 
+###Output Fields
+Field | Type | Description
+---: |:---:| ---
+ls_vs | number | syslog version
+ls_ts | timestamp | logstash ingest timestamp
+
+
 ## History
 2016-NOV-29: Initial creation : aeva_assured
 
