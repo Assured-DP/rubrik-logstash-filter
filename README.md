@@ -29,7 +29,7 @@ updated for event.get / event.set v5+ requirements
 Please use the correct version identified file for the logstash version as there are differences in the required logstash plugins and logstash syntax. This filter is not designed to be used alongside a larger filter set in the same instance of logstash. The intent is that it is deployed in its own instance. A future design plan is to create a version that will run in conjunction with other designed filters
 
 ####Rubrik Versions
-Tested Version 3.0.0~DA3-53
+Tested Versions 3.0.0~DA3-53, Version 3.0.0~DA5-89
 
 ###Required Filters
 Rubrik filter leverages the standard included filters with Logstash. Additionally, the Assured DP Rubrik Syslog filter requires the community maintained [logstash-filter-elapsed](https://github.com/logstash-plugins/logstash-filter-elapsed).
