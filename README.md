@@ -29,13 +29,14 @@ updated for event.get / event.set v5+ requirements
 Please use the correct version identified file for the logstash version as there are differences in the required logstash plugins and logstash syntax. This filter is not designed to be used alongside a larger filter set in the same instance of logstash. The intent is that it is deployed in its own instance. A future design plan is to create a version that will run in conjunction with other designed filters
 
 ####Rubrik Versions
-Tested Versions 3.0.0~DA3-53, Version 3.0.0~DA5-89
+Tested Versions 3.2.3~534, 3.0.0~DA3-53, Version 3.0.0~DA5-89
 
 ###Required Filters
 Rubrik filter leverages the standard included filters with Logstash. Additionally, the Assured DP Rubrik Syslog filter requires the community maintained [logstash-filter-elapsed](https://github.com/logstash-plugins/logstash-filter-elapsed).
 
 ###Known Issues
 Issue 001: Fileset Completed backups do not calculate elapsed time due to syslog variations
+Issue 002: Elapsed plugin only allows for a limited amount of time between events. Long running events will fail to show duration and any event where the initiating event is lost or was not captured will cause the calculation to fail.
 
 ###Output Fields
 Field | Type | Description
@@ -77,8 +78,11 @@ queueduration | number | time spent in queue before a task begins
 syslog5424_sd | string | syslog parse with combined troubleshooting data
 syslog5424_msg | string | full syslog message summary
 message | string | copy of complete syslog message text
+rbkuser | string | local user performing action in an audit event
+auditevent | string | action being performed during an audit event 
 
 ## History
+2017-SEP-26: Corrected for Audit Trails and validated against 3.2.3 : aeva_assured
 2016-NOV-29: Initial creation : aeva_assured
 
 ## Credits
