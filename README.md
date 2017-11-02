@@ -39,6 +39,7 @@ Issue 001: Fileset Completed backups do not calculate elapsed time due to syslog
 Issue 002: Elapsed plugin only allows for a limited amount of time between events. Long running events will fail to show duration and any event where the initiating event is lost or was not captured will cause the calculation to fail.
 
 ###Output Fields
+
 |Field | Type | Description|
 |---: |:---:| ---|
 |ls_vs | number | syslog version|
