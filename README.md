@@ -85,7 +85,9 @@ Issue 002: Elapsed plugin only allows for a limited amount of time between event
 
 ## History
 2017-NOV-03: Fixed the table above. Updated tested versions : aeva_assured
+
 2017-SEP-26: Corrected for Audit Trails and validated against 3.2.3 : aeva_assured
+
 2016-NOV-29: Initial creation : aeva_assured
 
 ## Credits
